@@ -134,4 +134,11 @@
 
     </PreferenceCategory>
 
+    <com.bliss.support.preferences.GlobalSettingSwitchPreference
+            android:key="force_mouse_click_as_touch"
+            android:title="@string/force_click_as_touch"
+            android:summary="@string/force_click_as_touch_summary"
+            settings:iconSpaceReserved="false"
+            android:defaultValue="false" />
+
 </PreferenceScreen>
