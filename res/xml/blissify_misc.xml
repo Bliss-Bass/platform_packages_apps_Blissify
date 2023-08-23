@@ -152,6 +152,12 @@
         android:entries="@array/prevent_pointer_acceleration_entries"
         android:entryValues="@array/prevent_pointer_acceleration_values"
         android:defaultValue="0" />
+    <com.bliss.support.preferences.SystemSettingSwitchPreference
+        android:key="alert_window_bypass_low_ram"
+        android:title="@string/bypass_low_ram"
+        android:summary="@string/bypass_low_ram_summary"
+        settings:iconSpaceReserved="false"
+        android:defaultValue="false" />
          </PreferenceCategory>
 
 </PreferenceScreen>

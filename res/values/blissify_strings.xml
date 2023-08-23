@@ -816,4 +816,7 @@
     <string name="prevent_pointer_acceleration_pointer">Pointer only</string>
     <string name="prevent_pointer_acceleration_none">None</string>
 
+     <!-- Bypass low ram blocking -->
+    <string name="bypass_low_ram">Bypass restrictions on Low RAM devices or Go builds</string>
+    <string name="bypass_low_ram_summary">Allowing apps to grant system alert window permissions and draw over other apps in low RAM devices or Go builds.</string>
 </resources>
