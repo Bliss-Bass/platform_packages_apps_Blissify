@@ -16,9 +16,13 @@
 
 package org.blissroms.blissify.fragments;
 
+import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_2BUTTON;
+import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY;
+
 import android.app.ActivityManager;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.om.IOverlayManager;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
@@ -27,6 +31,10 @@ import android.os.UserHandle;
 import android.os.SystemProperties;
 import android.os.PowerManager;
 import android.os.ServiceManager;
+import android.view.Display;
+import android.view.DisplayInfo;
+import android.view.IWindowManager;
+import android.view.WindowManagerGlobal;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -40,6 +48,8 @@ import androidx.preference.SwitchPreference;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.internal.util.hwkeys.ActionConstants;
 import com.android.internal.util.hwkeys.ActionUtils;
+
+import static com.android.systemui.shared.recents.utilities.Utilities.isTablet;
 
 import com.android.settings.R;
 import com.android.settings.Utils;
@@ -58,6 +68,7 @@ import java.util.List;
 @SearchIndexable(forTarget = SearchIndexable.ALL & ~SearchIndexable.ARC)
 public class Buttons extends ActionFragment implements OnPreferenceChangeListener {
 
+    private static final String TAG = "Buttons";
     private static final String HWKEY_DISABLE = "hardware_keys_disable";
 
     // category keys
@@ -73,6 +84,7 @@ public class Buttons extends ActionFragment implements OnPreferenceChangeListene
     private static final String KEY_BUTTON_MANUAL_BRIGHTNESS_NEW = "button_manual_brightness_new";
     private static final String KEY_BUTTON_TIMEOUT = "button_timeout";
     private static final String KEY_BUTON_BACKLIGHT_OPTIONS = "button_backlight_options_category";
+    private static final String KEY_ENABLE_TASKBAR = "enable_taskbar";
 
      // Masks for checking presence of hardware keys.
     // Must match values in frameworks/base/core/res/res/values/config.xml
@@ -85,6 +97,7 @@ public class Buttons extends ActionFragment implements OnPreferenceChangeListene
     public static final int KEY_MASK_VOLUME = 0x40;
 
     private SwitchPreference mHwKeyDisable;
+    private SwitchPreference mEnableTaskbar;
     private CustomSeekBarPreference mButtonTimoutBar;
     private CustomSeekBarPreference mManualButtonBrightness;
     private PreferenceCategory mButtonBackLightCategory;
@@ -97,6 +110,18 @@ public class Buttons extends ActionFragment implements OnPreferenceChangeListene
         final Resources res = getResources();
         final ContentResolver resolver = getActivity().getContentResolver();
         final PreferenceScreen prefScreen = getPreferenceScreen();
+
+        mEnableTaskbar = (SwitchPreference) findPreference(KEY_ENABLE_TASKBAR);
+        if (mEnableTaskbar != null) {
+            if (!hasNavigationBar()) {
+                prefScreen.removePreference(mEnableTaskbar);
+            } else {
+                mEnableTaskbar.setOnPreferenceChangeListener(this);
+                mEnableTaskbar.setChecked(Settings.System.getInt(getContentResolver(),
+                        Settings.System.ENABLE_TASKBAR,
+                        isTablet(getContext()) ? 1 : 0) == 1);
+            }
+        }
 
         final boolean needsNavbar = ActionUtils.hasNavbarByDefault(getActivity());
         final PreferenceCategory hwkeyCat = (PreferenceCategory) prefScreen
@@ -203,6 +228,14 @@ public class Buttons extends ActionFragment implements OnPreferenceChangeListene
             int buttonBrightness = (Integer) newValue;
             Settings.System.putInt(getContentResolver(),
                     Settings.System.CUSTOM_BUTTON_BRIGHTNESS, buttonBrightness);
+        } else if (preference == mEnableTaskbar) {
+            boolean value = (Boolean) newValue;
+            if (is2ButtonNavigationEnabled(getContext())) {
+                // Let's switch to gestural mode if user previously had 2 buttons enabled.
+                setButtonNavigationMode(NAV_BAR_MODE_GESTURAL_OVERLAY);}
+            Settings.System.putInt(getContentResolver(),
+                    Settings.System.ENABLE_TASKBAR, value ? 1 : 0);
+            return true;
         } else {
             return false;
         }
@@ -217,6 +250,32 @@ public class Buttons extends ActionFragment implements OnPreferenceChangeListene
     @Override
     protected boolean usesExtendedActionsList() {
         return true;
+    }
+
+    private static boolean is2ButtonNavigationEnabled(Context context) {
+        return NAV_BAR_MODE_2BUTTON == context.getResources().getInteger(
+                com.android.internal.R.integer.config_navBarInteractionMode);
+    }
+
+    private static void setButtonNavigationMode(String overlayPackage) {
+        IOverlayManager overlayManager = IOverlayManager.Stub.asInterface(
+                ServiceManager.getService(Context.OVERLAY_SERVICE));
+        try {
+            overlayManager.setEnabledExclusiveInCategory(overlayPackage, UserHandle.USER_CURRENT);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    private static boolean hasNavigationBar() {
+        boolean hasNavigationBar = false;
+        try {
+            IWindowManager windowManager = WindowManagerGlobal.getWindowManagerService();
+            hasNavigationBar = windowManager.hasNavigationBar(Display.DEFAULT_DISPLAY);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error getting navigation bar status");
+        }
+        return hasNavigationBar;
     }
 
     /**

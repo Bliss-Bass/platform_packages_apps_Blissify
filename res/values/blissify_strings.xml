@@ -193,6 +193,7 @@
     <string name="powermenu_power">Power</string>
     <string name="powermenu_advanced">Advanced reboot options</string>
     <string name="powermenu_restart">Restart</string>
+    <string name="powermenu_sleep">Sleep</string>
     <string name="powermenu_airplane">Airplane</string>
     <string name="powermenu_settings">Settings</string>
     <string name="powermenu_lockdown">Lock Down</string>
@@ -808,6 +809,10 @@
     <!-- QS Transparency -->
     <string name="qs_transparency_title">Background transparency</string>
     <string name="qs_transparency_summary">Set transparency level for QS background</string>
+
+    <!-- Taskbar -->
+    <string name="enable_taskbar_title">Enable Taskbar</string>
+    <string name="enable_taskbar_summary">Enable the taskbar that is only available on tablets</string>
 
     <!-- Prevent pointer accleration -->
     <string name="prevent_pointer_acceleration_title">Pointer acceleration</string>
