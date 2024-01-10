@@ -810,6 +810,10 @@
     <string name="qs_transparency_title">Background transparency</string>
     <string name="qs_transparency_summary">Set transparency level for QS background</string>
 
+    <!-- Taskbar -->
+    <string name="enable_taskbar_title">Enable Taskbar</string>
+    <string name="enable_taskbar_summary">Enable the taskbar that is only available on tablets</string>
+
     <!-- Prevent pointer accleration -->
     <string name="prevent_pointer_acceleration_title">Pointer acceleration</string>
     <string name="prevent_pointer_acceleration_full">Full (Pointer + Wheel)</string>
